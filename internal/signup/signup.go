@@ -3,8 +3,6 @@ package signup
 import (
 	"errors"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/tidwall/gjson"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,6 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/tidwall/gjson"
 )
 
 var (
@@ -50,7 +51,7 @@ func NewPostForm() *postForm {
 func (p *postForm) Signup(account, passwd string) (retStr string, err error) {
 	// 获取用户标识的唯一ID
 	cks := getCookie(account, passwd)
-	fmt.Println("logincookie",cks)
+	fmt.Println("logincookie", cks)
 	spID := getSpID(cks)
 	p.id = spID
 	u := handleFuckInfo(p)
@@ -83,7 +84,7 @@ func (p *postForm) Signup(account, passwd string) (retStr string, err error) {
 
 	for _, c := range cks {
 		req.AddCookie(c)
-		fmt.Println(c)
+		// fmt.Println(c)
 	}
 
 	// 新建默认参数的客户端，执行预先给定的 request 请求
@@ -103,17 +104,11 @@ func (p *postForm) Signup(account, passwd string) (retStr string, err error) {
 	code := gjson.Get(string(data), "e").Int()
 	// msg := gjson.Get(string(data), "m").String()
 
-	fmt.Println("用户唯一id为：",spID)
-
+	fmt.Println("用户唯一id为：", spID)
 
 	if code == 0 {
-<<<<<<< HEAD
-		retStr = fmt.Sprintf("%s打卡信息为：\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n",
+		retStr := fmt.Sprintf("%s打卡信息为：\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n",
 			p.riqi, p.StuName, p.StuNumber, p.PhoneNumber, p.College, p.Province, p.City, p.id)
-=======
-		retStr = fmt.Sprintf("%s 打卡信息为：\n%s\n%s\n%s\n%s\n%s\n%s\n",
-			p.riqi,p.StuName, p.StuNumber, p.PhoneNumber, p.College, p.Province, p.City)
->>>>>>> 73f7a7a4b3134b68b63cd66b224bccbcfa969cc1
 		return retStr, nil
 	}
 	return "", errors.New("未知错误")
@@ -138,13 +133,8 @@ func handleFuckInfo(p *postForm) url.Values {
 	u.Add("shifouyoufare", "否")
 
 	u.Add("tiwen", "36.6")
-<<<<<<< HEAD
 	u.Add("tiwen1", "36.2")
 	u.Add("tiwen2", "36.2")
-=======
-	u.Add("tiwen1", "36.6")
-	u.Add("tiwen2", "36.6")
->>>>>>> 73f7a7a4b3134b68b63cd66b224bccbcfa969cc1
 
 	u.Add("fanhuididian", "")
 	u.Add("qitaxinxi", "")
