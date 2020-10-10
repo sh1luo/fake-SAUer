@@ -46,14 +46,11 @@ var signupCmd = &cobra.Command{
 	Long:  desc,
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cron.New()
-<<<<<<< HEAD
+
 		_, err := c.AddFunc("1 1,3 * * *", func() { // 设置打卡两次，防止系统故障
 			fmt.Printf("开始第%d次打卡：\n", punchCount)
 			punchCount++
 
-=======
-		_, err := c.AddFunc("* * * * *", func() {	//设置打卡两次，防止某次系统出问题
->>>>>>> 73f7a7a4b3134b68b63cd66b224bccbcfa969cc1
 			ps := signup.NewPostForm()
 			ps.StuName = stuName
 			ps.StuNumber = account
