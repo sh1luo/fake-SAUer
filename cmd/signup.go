@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/robfig/cron/v3"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"os/signal"
 	"strings"
 	"time"
 	"toolset/internal/signup"
+
+	"github.com/robfig/cron/v3"
+	"github.com/spf13/cobra"
 )
 
 var desc = strings.Join([]string{
@@ -72,7 +73,8 @@ var signupCmd = &cobra.Command{
 			return
 		}
 
-		c.Start() //启动定时任务
+		//启动定时任务
+		c.Start()
 
 		quit := make(chan os.Signal)
 		signal.Notify(quit, os.Interrupt)
