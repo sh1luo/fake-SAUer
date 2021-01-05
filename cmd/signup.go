@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"strings"
 	"time"
-	"toolset/internal/signup"
+	"toolset/internal/faker"
 
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
@@ -25,49 +25,41 @@ var desc = strings.Join([]string{
 }, "\n")
 
 var punchCount uint = 1
-var stuName, phoneNumber, stuProvince, stuCity, stuCollege, account, passwd string
-
-//var email string
 
 func init() {
 	//signupCmd.Flags().StringVarP(&stuID, "stuID", "s", "", "学生学号")
-	signupCmd.Flags().StringVarP(&stuName, "stuName", "n", "", "学生姓名")
-	signupCmd.Flags().StringVarP(&phoneNumber, "phoneNumber", "p", "", "学生手机号")
-	signupCmd.Flags().StringVarP(&stuProvince, "stuProvince", "r", "", "所在省份")
-	signupCmd.Flags().StringVarP(&stuCity, "stuCity", "c", "", "所在城市")
-	signupCmd.Flags().StringVarP(&stuCollege, "stuCollege", "o", "", "学院")
+	//signupCmd.Flags().StringVarP(&stuName, "stuName", "n", "", "学生姓名")
+	//signupCmd.Flags().StringVarP(&phoneNumber, "phoneNumber", "p", "", "学生手机号")
+	//signupCmd.Flags().StringVarP(&stuProvince, "stuProvince", "r", "", "所在省份")
+	//signupCmd.Flags().StringVarP(&stuCity, "stuCity", "c", "", "所在城市")
+	//signupCmd.Flags().StringVarP(&stuCollege, "stuCollege", "o", "", "学院")
 	//signupCmd.Flags().StringVarP(&email, "email", "e", "", "接收结果的email")
-	signupCmd.Flags().StringVarP(&account, "account", "a", "", "账号")
-	signupCmd.Flags().StringVarP(&passwd, "passwd", "w", "", "密码")
+	//signupCmd.Flags().StringVarP(&account, "account", "a", "", "账号")
+	//signupCmd.Flags().StringVarP(&passwd, "passwd", "w", "", "密码")
 }
 
 var signupCmd = &cobra.Command{
-	Use:   "signup",
+	Use:   "faker",
 	Short: "智慧沈航健康打卡",
 	Long:  desc,
 	Run: func(cmd *cobra.Command, args []string) {
 		c := cron.New()
+		f := faker.NewFaker()
 
-		_, err := c.AddFunc("1 1,3 * * *", func() { // 设置打卡两次，防止系统故障
-			fmt.Printf("开始第%d次打卡：\n", punchCount)
+		// 设置打卡两次，防止系统故障
+		_, err := c.AddFunc("* * * * *", func() {
+			fmt.Printf("%s开始第%d次打卡:\n", time.Now(), punchCount)
+
+			// TODO:目前先每次载入所有数据，后续改为文件监听
+			f = faker.NewFaker()
+
+			// 执行打卡逻辑
+			f.Do()
+
+			fmt.Printf("%s: 第%d次打卡完毕.\n", time.Now(), punchCount)
 			punchCount++
-
-			ps := signup.NewPostForm()
-			ps.StuName = stuName
-			ps.StuNumber = account
-			ps.PhoneNumber = phoneNumber
-			ps.College = stuCollege
-			ps.Province = stuProvince
-			ps.City = stuCity
-
-			t := time.Now().Format("2006-01-02 15:04:05")
-			str, err := ps.Signup(account, passwd)
-			if err != nil {
-				fmt.Println("今日打卡出错！", t)
-			} else {
-				fmt.Println("打卡成功.", str)
-			}
 		})
+
 		if err != nil {
 			log.Fatalf("Add job err: %v", err)
 			return

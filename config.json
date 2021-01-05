@@ -1,0 +1,31 @@
+{
+  "withEmail": {
+    "on": false,
+    "account": "",
+    "token": "",
+    "host": "",
+    "port": "",
+    "is_ssl": "",
+    "from": ""
+  },
+  "stu_info": [
+    {
+      "name": "刘继坤",
+      "phone": "15236176076",
+      "province": "河南省",
+      "city": "洛阳市",
+      "college": "计算机学院",
+      "account": "183411010125",
+      "passwd": "52biancheng"
+    },
+    {
+      "name": "高一宁",
+      "phone": "18841268762",
+      "province": "辽宁省",
+      "city": "鞍山市",
+      "college": "自动化学院",
+      "account": "193407020102",
+      "passwd": "948203253Gyn"
+    }
+  ]
+}

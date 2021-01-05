@@ -3,9 +3,9 @@ package cmd
 import "github.com/spf13/cobra"
 
 var rootCmd = &cobra.Command{
-	Use: "",
+	Use:   "",
 	Short: "",
-	Long: "",
+	Long:  "",
 }
 
 func Execute() error {
@@ -13,5 +13,5 @@ func Execute() error {
 }
 
 func init() {
-	rootCmd.AddCommand(signupCmd,versionCmd)
+	rootCmd.AddCommand(signupCmd, versionCmd)
 }
