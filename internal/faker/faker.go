@@ -36,6 +36,10 @@ func NewFaker() *Faker {
 		us: make(map[string]int),
 		cf: config.ReadConfig(),
 	}
+	for _, pStuInfo := range f.cf.StusInfos {
+		fmt.Println(*pStuInfo)
+	}
+
 	f.GetUUID()
 	f.Cnt = checkInfo(f.cf.StusInfos)
 	return &f

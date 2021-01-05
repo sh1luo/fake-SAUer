@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	WithEmail WithEmail  `json:"withEmail"`
+	WithEmail *WithEmail `json:"withEmail"`
 	StusInfos []*StuInfo `json:"stu_info"`
 }
 
@@ -31,7 +31,10 @@ type StuInfo struct {
 }
 
 func ReadConfig() *Config {
-	var c Config
+	c := &Config{
+		WithEmail: &WithEmail{},
+		StusInfos: make([]*StuInfo, 5),
+	}
 
 	f, err := os.Open("config.json")
 	if err != nil {
@@ -44,5 +47,5 @@ func ReadConfig() *Config {
 		return nil
 	}
 
-	return &c
+	return c
 }
