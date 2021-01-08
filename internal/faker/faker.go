@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 	"toolset/config"
-	"toolset/email"
 )
 
 var (
@@ -28,7 +27,8 @@ type Faker struct {
 	// name->uuid
 	us map[string]int
 
-	e email.Email
+	// 后续更新邮件功能
+	// e email.Email
 }
 
 func NewFaker() *Faker {
@@ -36,6 +36,7 @@ func NewFaker() *Faker {
 		us: make(map[string]int),
 		cf: config.ReadConfig(),
 	}
+
 	for _, pStuInfo := range f.cf.StusInfos {
 		fmt.Println(*pStuInfo)
 	}

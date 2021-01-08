@@ -48,7 +48,8 @@ var signupCmd = &cobra.Command{
 
 		// 设置打卡两次，防止系统故障
 		_, err := c.AddFunc("* * * * *", func() {
-			fmt.Printf("%s开始第%d次打卡:\n", time.Now(), punchCount)
+			start := time.Now()
+			fmt.Printf("%s开始第%d次打卡:\n", start, punchCount)
 
 			// TODO:目前先每次载入所有数据，后续改为文件监听
 			f = faker.NewFaker()
@@ -56,7 +57,7 @@ var signupCmd = &cobra.Command{
 			// 执行打卡逻辑
 			f.Do()
 
-			fmt.Printf("%s: 第%d次打卡完毕.\n", time.Now(), punchCount)
+			fmt.Printf("第%d次打卡完毕，总用时%ss\n", punchCount, time.Since(start))
 			punchCount++
 		})
 
