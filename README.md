@@ -1,28 +1,40 @@
-# tools-set
-这是一个命令行应用工具集，包含了一些一键使用的好用命令
+# fake-SAUer
 
-我将它写成了命令行工具的方式，方便了以后的扩展
+`fake-SAUer` is a Simple configuration, efficient and reliable punching tool.
 
-尽管它现在只有一个功能 :)
+## Changelog
 
-## 自动打卡工具（fake-SAUer）
+### 2.0.0（2021-01）
 
-一行命令自动打卡，例如：
+This version has been changed to configure information using json other than command line parameters.
+
+#### Features
+
+- Configure by json file.
+- Email results notification.
+- **Support multiple users.**
+
+### 1.0.0（2020-09）
+
+#### Features
+
+- Automatically punch every day.
+- Configure before running,not hard-coded in the program.
+- Simple configuration.
+
+#### Use
 
 ```shell
-go run main.go signup -a=你的学号 -w=智慧深航登录密码 -p=手机号 -n=姓名 -r=省份 -c=城市 -o=学院
+go run main.go signup -a=Sno -w=passwd -p=phone_number -n=your_name -r=province -c=city -o=college
 ```
 
-注意：账号密码如果你不确定可以登陆这个网址，如果能上去，就对了。
+#### tips
 
-> 
+1. If you are not sure about the password,you can try to log in to the website below,if okay,it means correct.
+
 > https://app.sau.edu.cn/form/wap/default?formid=10
-> 
 
-只需要将文件夹放到服务器上，执行上述命令即可。
+## Tutorials
 
-如果你不确定部分信息写法，可以比对手机打卡上的内容一一填写。
+[Blog]: https://kcode.icu/	"MyBlog"
 
-相关开发思路的博客介绍请移步：[失落的博客](https://sh1luo.gitee.io/)
-
-## 待添加...
