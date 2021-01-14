@@ -1,35 +1,30 @@
 package email
 
 import (
-	"crypto/tls"
+	"fake-SAUer/config"
 	"gopkg.in/gomail.v2"
+	"strconv"
 )
 
 type Email struct {
-	*SMTPInfo
+	*config.SMTPEmail
 }
 
-type SMTPInfo struct {
-	Host     string
-	Port     int
-	IsSSL    bool
-	UserName string
-	Token    string
-	From     string
+func NewEmail(info *config.SMTPEmail) *Email {
+	return &Email{SMTPEmail: info}
 }
 
-func NewEmail(info *SMTPInfo) *Email {
-	return &Email{SMTPInfo: info}
-}
-
-func (e *Email) SendMail(to []string, subject, body string) error {
+func (e *Email) SendMail(to string, subject, body string) error {
 	m := gomail.NewMessage()
-	m.SetHeader("from", e.From)
-	m.SetHeader("to", to...)
-	m.SetHeader("subject", subject)
+	m.SetHeader("From", m.FormatAddress(e.Account, "I'm a Robot"))
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body)
 
-	dialer := gomail.NewDialer(e.Host, e.Port, e.UserName, e.Token)
-	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: e.IsSSL}
+	p, err := strconv.Atoi(e.Port)
+	if err != nil {
+		return err
+	}
+	dialer := gomail.NewDialer(e.Host, p, e.Account, e.Token)
 	return dialer.DialAndSend(m)
 }

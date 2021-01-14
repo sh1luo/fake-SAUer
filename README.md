@@ -28,7 +28,7 @@ This version has been changed to configure information using json other than com
 go run main.go signup -a=Sno -w=passwd -p=phone_number -n=your_name -r=province -c=city -o=college
 ```
 
-#### tips
+#### Tips
 
 1. If you are not sure about the password,you can try to log in to the website below,if okay,it means correct.
 
@@ -36,5 +36,7 @@ go run main.go signup -a=Sno -w=passwd -p=phone_number -n=your_name -r=province 
 
 ## Tutorials
 
-[Blog]: https://kcode.icu/	"MyBlog"
+[My Blog](https://kcode.icu/)
+
+
 

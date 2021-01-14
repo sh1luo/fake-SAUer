@@ -1,6 +1,8 @@
 package faker
 
 import (
+	"fake-SAUer/config"
+	"fake-SAUer/email"
 	"fmt"
 	"github.com/tidwall/gjson"
 	"io/ioutil"
@@ -8,42 +10,36 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"toolset/config"
 )
 
 var (
-	postUrl = "https://ucapp.sau.edu.cn/wap/login/invalid"        // 提交的目标地址
-	htmlUrl = "https://app.sau.edu.cn/form/wap/default?formid=10" // html页面地址
-	URL     = "https://app.sau.edu.cn/form/wap/default/save?formid=10"
+	postUrl = "https://ucapp.sau.edu.cn/wap/login/invalid"             // log in post target
+	htmlUrl = "https://app.sau.edu.cn/form/wap/default?formid=10"      // html address
+	URL     = "https://app.sau.edu.cn/form/wap/default/save?formid=10" // submit address
 )
 
 type Faker struct {
-	// 打卡人数
-	Cnt int
-
-	// 用户信息
-	cf *config.Config
-
-	// name->uuid
-	us map[string]int
-
-	// 后续更新邮件功能
-	// e email.Email
+	Cnt int // punch counts
+	Cf  *config.Config
+	mu  sync.RWMutex // protect follow, get uuid concurrently
+	E   *email.Email // 后续更新邮件功能
 }
 
-func NewFaker() *Faker {
+func NewFaker() (*Faker, error) {
+	cf, err := config.ReadConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	f := Faker{
-		us: make(map[string]int),
-		cf: config.ReadConfig(),
+		Cf: cf,
+		E:  email.NewEmail(cf.WithEmail),
 	}
 
-	for _, pStuInfo := range f.cf.StusInfos {
-		fmt.Println(*pStuInfo)
-	}
-
+	f.Cnt = checkInfo(f.Cf.StusInfos)
 	f.GetUUID()
-	f.Cnt = checkInfo(f.cf.StusInfos)
-	return &f
+
+	return &f, nil
 }
 
 // 将处理结果返回
@@ -51,15 +47,21 @@ func (f *Faker) Do() {
 	var wg sync.WaitGroup
 	var done int8
 	for i := 0; i < f.Cnt; i++ {
+
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			thisID := f.us[f.cf.StusInfos[i].Name]
-			if thisID <= 0 {
+
+			f.mu.RLock()
+			thisID := f.Cf.StusInfos[i].UUID
+			f.mu.RUnlock()
+			if thisID == 0 {
+				fmt.Println(f.Cf.StusInfos[i].Name, "的UUID为空，执行打卡失败")
 				return
 			}
-			cks := GetCookie(f.cf.StusInfos[i].Account, f.cf.StusInfos[i].Passwd)
-			u := bindInfo(f.cf.StusInfos[i], thisID)
+
+			cks := GetCookie(f.Cf.StusInfos[i].Account, f.Cf.StusInfos[i].Passwd)
+			u := bindInfo(f.Cf.StusInfos[i], thisID)
 			req, err := http.NewRequest("POST", URL, strings.NewReader(u.Encode()))
 			if err != nil {
 				panic("致命错误，POST提交表单失败！")
@@ -86,6 +88,7 @@ func (f *Faker) Do() {
 
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
+				fmt.Println(err)
 				return
 			}
 			defer resp.Body.Close()
@@ -93,19 +96,27 @@ func (f *Faker) Do() {
 			// 读取返回信息并打印字符串
 			data, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
+				fmt.Println(err)
 				return
 			}
 
 			// msg := gjson.Get(string(data), "m").String()
-			if code := gjson.Get(string(data), "e").Int(); code == 0 {
+			code := gjson.Get(string(data), "E").Int()
+			if code == 0 {
 				done++
-				if f.cf.WithEmail.On {
+			} else {
+				if f.Cf.WithEmail.Account != "" {
+					//TODO: email result.
+					// gomail: could not send email 1: 550 Mail content denied. http://service.mail.qq.com/cgi-bin/help?subtype=1&&id=20022&&no=1000726 [MFzFTLSV4lzOGwIfv+UqxoSSC6s1Cw9zqHAGgKkhM21V12ZU/zcxWo5jtQFePQGG4w== IP: 223.88.165.204]
 
+					//if err := f.E.SendMail(f.Cf.StusInfos[i].Email, "打卡通告", "今日打卡失败，请手动打卡"); err != nil {
+					//	log.Printf("发送邮件失败%s\n", err)
+					//}
 				}
 			}
 		}(i)
 	}
 
 	wg.Wait()
-	fmt.Printf("打卡完毕，一共%d个用户，拿到了%d个UUID\n", f.Cnt, done)
+	fmt.Printf("打卡完毕，一共%d个用户，成功了%d个\n", f.Cnt, done)
 }

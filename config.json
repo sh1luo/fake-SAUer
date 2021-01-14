@@ -1,12 +1,9 @@
 {
   "withEmail": {
-    "on": false,
-    "account": "",
-    "token": "",
-    "host": "",
-    "port": "",
-    "is_ssl": "",
-    "from": ""
+    "account": "3450047248@qq.com",
+    "token": "iyjgokhgzybudajj",
+    "host": "smtp.qq.com",
+    "port": "25"
   },
   "stu_info": [
     {
@@ -16,7 +13,8 @@
       "city": "洛阳市",
       "college": "计算机学院",
       "account": "183411010125",
-      "passwd": "52biancheng"
+      "passwd": "DzgqhP1l@6",
+      "email": "silo1999@163.com"
     },
     {
       "name": "高一宁",
@@ -25,7 +23,8 @@
       "city": "鞍山市",
       "college": "自动化学院",
       "account": "193407020102",
-      "passwd": "948203253Gyn"
+      "passwd": "948203253Gyn",
+      "email": "255327317@qq.com"
     }
   ]
 }

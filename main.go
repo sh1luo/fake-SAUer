@@ -1,7 +1,9 @@
 package main
 
 import (
-	_ "toolset/cmd"
+	_ "fake-SAUer/cmd"
 )
 
-func main() {}
+func main() {
+
+}

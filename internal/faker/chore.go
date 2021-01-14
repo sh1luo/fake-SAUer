@@ -1,6 +1,7 @@
 package faker
 
 import (
+	"fake-SAUer/config"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"log"
@@ -9,19 +10,26 @@ import (
 	"strconv"
 	"sync"
 	"time"
-	"toolset/config"
 )
 
-// 获取用户唯一标识符
+// GetUUID ...
 func (f *Faker) GetUUID() {
 	var wg sync.WaitGroup
 	var done int8
+	req, _ := http.NewRequest("POST", htmlUrl, nil)
+
 	for i := 0; i < f.Cnt; i++ {
+
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			cks := GetCookie(f.cf.StusInfos[i].Account, f.cf.StusInfos[i].Passwd)
-			req, _ := http.NewRequest("POST", htmlUrl, nil)
+
+			if f.Cf.StusInfos[i].UUID != 0 {
+				fmt.Printf("用户%s无需再获取UUID\n", f.Cf.StusInfos[i].Name)
+				return
+			}
+
+			cks := GetCookie(f.Cf.StusInfos[i].Account, f.Cf.StusInfos[i].Passwd)
 			for _, c := range cks {
 				req.AddCookie(c)
 			}
@@ -35,20 +43,28 @@ func (f *Faker) GetUUID() {
 			if err != nil {
 				return
 			}
-
 			doc.Find(".footReturn > input").Eq(0).Each(func(i int, selection *goquery.Selection) {
 				sid, _ := selection.Attr("value")
 				iid, err := strconv.Atoi(sid)
 				if err != nil || iid == 0 {
+					fmt.Println(err)
 					return
 				}
-				f.us[f.cf.StusInfos[i].Name] = iid
+				f.mu.Lock()
+				f.Cf.StusInfos[i].UUID = iid
+
+				fmt.Println("map操作：", f.Cf.StusInfos[i].Name, "=", iid)
+
+				f.mu.Unlock()
+
+				fmt.Printf("用户%s获取UUID成功! UUID=%d\n", f.Cf.StusInfos[i].Name, iid)
 				done++
 			})
 		}(i)
 	}
+
 	wg.Wait()
-	fmt.Printf("GetUUID完毕，一共%d个用户，拿到了%d个UUID\n", f.Cnt, done)
+	fmt.Printf("GetUUID完毕，一共%d个用户，本次重新获取了%d个用户的UUID\n", f.Cnt, done)
 	return
 }
 
@@ -62,6 +78,7 @@ func GetCookie(account, passwd string) []*http.Cookie {
 		log.Fatalf("致命错误！获取Cookie失败：%v", err)
 	}
 	defer resp.Body.Close()
+
 	cks := resp.Cookies()
 	return cks
 }
