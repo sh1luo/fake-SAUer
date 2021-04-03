@@ -1,7 +1,7 @@
 {
   "withEmail": {
     "account": "3450047248@qq.com",
-    "token": "iyjgokhgzybudajj",
+    "token": "YOURTOKEN",
     "host": "smtp.qq.com",
     "port": "25"
   },
