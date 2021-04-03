@@ -28,3 +28,13 @@ func (e *Email) SendMail(to string, subject, body string) error {
 	dialer := gomail.NewDialer(e.Host, p, e.Account, e.Token)
 	return dialer.DialAndSend(m)
 }
+
+func SendMail(to string, subject, body string) error {
+	m := gomail.NewMessage()
+	m.SetHeader("From", m.FormatAddress("3450047248@qq.com", "高一宁女士您好"))
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
+
+	return gomail.NewDialer("smtp.qq.com", 465, "3450047248@qq.com", "iyjgokhgzybudajj").DialAndSend(m)
+}

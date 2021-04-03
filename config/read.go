@@ -20,7 +20,7 @@ type StuInfo struct {
 	Passwd   string `json:"passwd"`
 	Email    string `json:"email"`
 
-	UUID int `json:"-"`
+	UUID string `json:"uuid"`
 }
 
 type SMTPEmail struct {

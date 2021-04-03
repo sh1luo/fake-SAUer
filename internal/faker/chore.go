@@ -4,10 +4,10 @@ import (
 	"fake-SAUer/config"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -24,7 +24,7 @@ func (f *Faker) GetUUID() {
 		go func(i int) {
 			defer wg.Done()
 
-			if f.Cf.StusInfos[i].UUID != 0 {
+			if f.Cf.StusInfos[i].UUID != "" {
 				fmt.Printf("用户%s无需再获取UUID\n", f.Cf.StusInfos[i].Name)
 				return
 			}
@@ -39,25 +39,24 @@ func (f *Faker) GetUUID() {
 				return
 			}
 
+			b, _ := ioutil.ReadAll(resp.Body)
+			fmt.Println(string(b))
+
 			doc, err := goquery.NewDocumentFromReader(resp.Body)
 			if err != nil {
 				return
 			}
+
 			doc.Find(".footReturn > input").Eq(0).Each(func(i int, selection *goquery.Selection) {
 				sid, _ := selection.Attr("value")
-				iid, err := strconv.Atoi(sid)
-				if err != nil || iid == 0 {
-					fmt.Println(err)
-					return
-				}
 				f.mu.Lock()
-				f.Cf.StusInfos[i].UUID = iid
+				f.Cf.StusInfos[i].UUID = sid
 
-				fmt.Println("map操作：", f.Cf.StusInfos[i].Name, "=", iid)
+				//fmt.Println("map操作：", f.Cf.StusInfos[i].Name, "=", iid)
 
 				f.mu.Unlock()
 
-				fmt.Printf("用户%s获取UUID成功! UUID=%d\n", f.Cf.StusInfos[i].Name, iid)
+				fmt.Printf("用户%s获取UUID成功! UUID=%d\n", f.Cf.StusInfos[i].Name, sid)
 				done++
 			})
 		}(i)
@@ -84,7 +83,7 @@ func GetCookie(account, passwd string) []*http.Cookie {
 }
 
 // bindInfo 返回一个可以encode的url.Value结构
-func bindInfo(f *config.StuInfo, iid int) url.Values {
+func bindInfo(f *config.StuInfo, sid string) url.Values {
 	u := url.Values{}
 	u.Add("xingming", f.Name)
 	u.Add("xuehao", f.Account)
@@ -104,13 +103,12 @@ func bindInfo(f *config.StuInfo, iid int) url.Values {
 	u.Add("shifouyoufare", "否")
 
 	u.Add("tiwen", "36.6")
-	u.Add("tiwen1", "36.6")
-	u.Add("tiwen2", "36.6")
+	u.Add("tiwen1", "36.5")
+	u.Add("tiwen2", "36.4")
 
 	u.Add("fanhuididian", "")
 	u.Add("qitaxinxi", "")
 
-	sid := strconv.Itoa(iid)
 	u.Add("id", sid)
 	return u
 }
