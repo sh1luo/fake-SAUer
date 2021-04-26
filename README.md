@@ -1,10 +1,10 @@
 # fake-SAUer
 
-`fake-SAUer` 是一个简单，高效的 SAUer 打卡工具，使用Go语言构建。
+`fake-SAUer` 是一个简单，高效的 SAUer 打卡工具，使用 Go 语言构建。
 
 ## 如何使用？
 
-这里我推荐一下我的使用方法，借助 screen 工具新建终端，当然也有其他的，供参考。
+这里我推荐一下我的使用方法，借助 `screen` 工具新建终端，当然也有其他的，供参考。
 
 ```shell
 git clone https://github.com/sh1luo/fake-SAUer.git
@@ -26,7 +26,7 @@ go build main.go
 
 ### 2.0.0（2021-01）
 
-这个版本使用 json 文件传递参数而不是原先的命令行参数。
+这个版本使用 `json` 文件传递参数而不是原先的命令行参数。
 
 #### Features
 
