@@ -1,8 +1,7 @@
-package faker
+package core
 
 import (
-	"fake-SAUer/config"
-	"fake-SAUer/email"
+	"fake-SAUer/global"
 	"fmt"
 	"github.com/tidwall/gjson"
 	"io/ioutil"
@@ -19,56 +18,46 @@ var (
 )
 
 type Faker struct {
-	Cnt int // punch counts
-	Cf  *config.Config
-	mu  sync.RWMutex // protect follow, get uuid concurrently
-	E   *email.Email // 后续更新邮件功能
+	Cnt  int 			// punch counts
+	mu sync.Mutex 		// protect global.StuInfo
 }
 
 func NewFaker() (*Faker, error) {
-	cf, err := config.ReadConfig()
+	err := global.ReadConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, pStu := range cf.StusInfos {
-		fmt.Println(pStu.Name,pStu.College,pStu.City,pStu.Account,pStu.Email,pStu.Province,pStu.Phone)
+	for _, pStu := range global.G_CONF.StusInfos {
+		fmt.Println(pStu, pStu.College, pStu.City, pStu.Account, pStu.Email, pStu.Province, pStu.Phone)
 	}
 
 	f := Faker{
-		Cf: cf,
-		E:  email.NewEmail(cf.WithEmail),
+		Cnt: checkInfo(),
 	}
-
-	f.Cnt = checkInfo(f.Cf.StusInfos)
-	//f.GetUUID()
 
 	return &f, nil
 }
 
-// 将处理结果返回
-func (f *Faker) Do() bool {
+// Do 执行任务，返回成功数量
+func (f *Faker) Do() (done int8) {
 	var wg sync.WaitGroup
-	var done int8
 	for i := 0; i < f.Cnt; i++ {
-
 		wg.Add(1)
 		go func(i int) {
-			defer wg.Done()
 
-			f.mu.RLock()
-			thisID := f.Cf.StusInfos[i].UUID
-			f.mu.RUnlock()
+			defer wg.Done()
+			thisID := global.G_CONF.StusInfos[i].UUID
 			if thisID == "" {
-				fmt.Println(f.Cf.StusInfos[i].Name, "的UUID为空，执行打卡失败")
+				fmt.Println(global.G_CONF.StusInfos[i].Name, "的UUID为空，执行打卡失败")
 				return
 			}
 
-			cks := GetCookie(f.Cf.StusInfos[i].Account, f.Cf.StusInfos[i].Passwd)
-			u := bindInfo(f.Cf.StusInfos[i], thisID)
+			cks := GetCookie(global.G_CONF.StusInfos[i].Account, global.G_CONF.StusInfos[i].Passwd)
+			u := bindInfo(global.G_CONF.StusInfos[i], thisID)
 			req, err := http.NewRequest("POST", URL, strings.NewReader(u.Encode()))
 			if err != nil {
-				panic("致命错误，POST提交表单失败！")
+				panic("致命错误，构造POST表单失败！")
 			}
 
 			req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
@@ -77,16 +66,12 @@ func (f *Faker) Do() bool {
 			req.Header.Add("Cache-Control", "no-cache")
 			req.Header.Add("Connection", "keep-alive")
 
-			req.Header.Add("Location", "https://app.sau.edu.cn/form/wap/default/index?formid=10&nn=66.42684593424431")
-
 			req.Header.Add("Content-Length", strconv.Itoa(len(u.Encode())))
 			req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 			req.Header.Add("Host", "app.sau.edu.cn")
 			req.Header.Add("Origin", "https://app.sau.edu.cn")
 			req.Header.Add("Pragma", "no-cache")
 			req.Header.Add("Referer", "https://app.sau.edu.cn/form/wap/default/index?formid=10&nn=4669.797748311082")
-
-			//req.Header.Add("sec-ch-ua-mobile", "?0")
 
 			req.Header.Add("Sec-Fetch-Dest", "empty")
 			req.Header.Add("Sec-Fetch-Mode", "cors")
@@ -98,19 +83,17 @@ func (f *Faker) Do() bool {
 				req.AddCookie(c)
 			}
 
-			fmt.Println(req.Header)
+			resp, err := http.DefaultClient.Do(req)
+			//c := http.Client{
+			//	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			//		fmt.Println("redirect!")
+			//		return http.ErrUseLastResponse
+			//	},
+			//}
 
-			//resp, err := http.DefaultClient.Do(req)
-			c := http.Client{
-				CheckRedirect: func(req *http.Request, via []*http.Request) error {
-					fmt.Println("redirect!")
-					return http.ErrUseLastResponse
-				},
-			}
-
-			resp, err := c.Do(req)
+			//resp, err := c.Do(req)
 			if err != nil {
-				fmt.Println("c.Do() err: ",err)
+				fmt.Println("c.Do() err: ", err)
 				return
 			}
 
@@ -130,11 +113,10 @@ func (f *Faker) Do() bool {
 			//	return
 			//}
 
-
 			// 读取返回信息并打印字符串
 			data, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				fmt.Println("data, err := ioutil.ReadAll(resp.Body): ",err)
+				fmt.Println("data, err := ioutil.ReadAll(resp.Body): ", err)
 				return
 			}
 
@@ -143,11 +125,11 @@ func (f *Faker) Do() bool {
 			if e == 0 {
 				done++
 			} else {
-				if f.Cf.WithEmail.Account != "" {
+				if global.G_CONF.WithEmail.Account != "" {
 					//TODO: email result.
 					// gomail: could not send email 1: 550 Mail content denied. http://service.mail.qq.com/cgi-bin/help?subtype=1&&id=20022&&no=1000726 [MFzFTLSV4lzOGwIfv+UqxoSSC6s1Cw9zqHAGgKkhM21V12ZU/zcxWo5jtQFePQGG4w== IP: 223.88.165.204]
 
-					//if err := f.E.SendMail(f.Cf.StusInfos[i].Email, "打卡通告", "今日打卡失败，请手动打卡"); err != nil {
+					//if err := f.E.SendMail(f.Conf.StusInfos[i].Email, "打卡通告", "今日打卡失败，请手动打卡"); err != nil {
 					//	log.Printf("发送邮件失败%s\n", err)
 					//}
 				}
@@ -157,5 +139,5 @@ func (f *Faker) Do() bool {
 
 	wg.Wait()
 	fmt.Printf("打卡完毕，一共%d个用户，成功了%d个\n", f.Cnt, done)
-	return f.Cnt == int(done)
+	return nil, done
 }

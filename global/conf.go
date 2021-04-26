@@ -1,4 +1,4 @@
-package config
+package global
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	WithEmail *SMTPEmail `json:"withEmail"`
+	WithEmail *smtpEmail `json:"withEmail"`
 	StusInfos []*StuInfo `json:"stu_info"`
 }
 
@@ -23,29 +23,29 @@ type StuInfo struct {
 	UUID string `json:"uuid"`
 }
 
-type SMTPEmail struct {
+type smtpEmail struct {
 	Account string `json:"account"`
 	Token   string `json:"token"`
 	Host    string `json:"host"`
 	Port    string `json:"port"`
 }
 
-func ReadConfig() (*Config, error) {
+func ReadConfig() (err error) {
 	c := &Config{
-		WithEmail: new(SMTPEmail),
-		StusInfos: make([]*StuInfo, 0),
+		WithEmail: new(smtpEmail),
+		StusInfos: make([]*StuInfo, 1),
 	}
 
-	f, err := os.Open("config.json")
+	f, err := os.Open("global.json")
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer f.Close()
 
 	err = json.NewDecoder(f).Decode(&c)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	return c, nil
+	G_CONF = c
+	return nil
 }
