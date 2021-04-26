@@ -1,42 +1,55 @@
 # fake-SAUer
 
-`fake-SAUer` is a Simple configuration, efficient and reliable punching tool.
+`fake-SAUer` 是一个简单，高效的 SAUer 打卡工具，使用Go语言构建。
 
-## Changelog
+## 如何使用？
+
+这里我推荐一下我的使用方法，借助 screen 工具新建终端，当然也有其他的，供参考。
+
+```shell
+git clone https://github.com/sh1luo/fake-SAUer.git
+screen -S punch
+cd fake-SAUer/
+go build main.go
+./main
+```
+
+执行完后按组合键 `ctrl+A+D` 退出终端，按住 `ctrl` 不松手按 `A` 不松手再按 `D`。
+
+## 版本变更
+
+### 3.0.0-release（2021-04）
+
+这个版本优化了整体逻辑，重构了部分代码，看起来更清晰，功能与之前无差异。
+
+需要注意的是，现在 **不提供自动获取 UUID 的功能，需要手动在配置项中填入**。
 
 ### 2.0.0（2021-01）
 
-This version has been changed to configure information using json other than command line parameters.
+这个版本使用 json 文件传递参数而不是原先的命令行参数。
 
 #### Features
 
-- Configure by json file.
-- Email results notification.
-- **Support multiple users.**
+- 使用json文件配置信息，可读性高
+- 邮件通知
+- 支持多用户
 
 ### 1.0.0（2020-09）
 
+这是第一个版本，实现了一些基本功能
+
 #### Features
 
-- Automatically punch every day.
-- Configure before running,not hard-coded in the program.
-- Simple configuration.
+- 每日自动打卡
+- 所有参数由命令行参数提供，非硬编码
+- 配置简洁
 
-#### Use
+## Tips
 
-```shell
-go run main.go signup -a=Sno -w=passwd -p=phone_number -n=your_name -r=province -c=city -o=college
-```
-
-#### Tips
-
-1. If you are not sure about the password,you can try to log in to the website below,if okay,it means correct.
+1. 如果你不确定配置项中的账号对应的密码是多少，打开这个网站尝试登录，如果可以即正确。
 
 > https://app.sau.edu.cn/form/wap/default?formid=10
 
 ## Tutorials
 
-[My Blog](https://kcode.icu/)
-
-
-
+[我的博客](https://kcode.icu/)

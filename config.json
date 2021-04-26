@@ -3,7 +3,7 @@
     "enabled": true,
     "account": "YOUR_LOGIN_ID",
     "token": "YOUR_LOGIN_TOKEN",
-    "host": "smtp.qq.com",
+    "host": "xxx.xx.com",
     "port": "465"
   },
   "stu_info": [
