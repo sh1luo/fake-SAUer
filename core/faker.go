@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/tidwall/gjson"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -12,14 +13,14 @@ import (
 )
 
 var (
-	postUrl = "https://ucapp.sau.edu.cn/wap/login/invalid"             // log in post target
-	htmlUrl = "https://app.sau.edu.cn/form/wap/default?formid=10"      // html address
-	URL     = "https://app.sau.edu.cn/form/wap/default/save?formid=10" // submit address
+	postUrl = "https://ucapp.sau.edu.cn/wap/login/invalid" // log in post target
+	// URL htmlUrl = "https://app.sau.edu.cn/form/wap/default?formid=10"
+	URL = "https://app.sau.edu.cn/form/wap/default/save?formid=10" // submit address
 )
 
 type Faker struct {
-	Cnt  int 			// punch counts
-	mu sync.Mutex 		// protect global.StuInfo
+	Cnt int        // punch counts
+	mu  sync.Mutex // protect global.StuInfo
 }
 
 func NewFaker() (*Faker, error) {
@@ -28,22 +29,15 @@ func NewFaker() (*Faker, error) {
 		return nil, err
 	}
 
-	for _, pStu := range global.G_CONF.StusInfos {
-		fmt.Println(pStu, pStu.College, pStu.City, pStu.Account, pStu.Email, pStu.Province, pStu.Phone)
-	}
-
-	f := Faker{
-		Cnt: checkInfo(),
-	}
-
-	return &f, nil
+	return &Faker{Cnt: checkInfo()}, nil
 }
 
 // Do 执行任务，返回成功数量
 func (f *Faker) Do() (done int8) {
 	var wg sync.WaitGroup
+	var mu sync.Mutex
+	wg.Add(f.Cnt)
 	for i := 0; i < f.Cnt; i++ {
-		wg.Add(1)
 		go func(i int) {
 
 			defer wg.Done()
@@ -84,34 +78,10 @@ func (f *Faker) Do() (done int8) {
 			}
 
 			resp, err := http.DefaultClient.Do(req)
-			//c := http.Client{
-			//	CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			//		fmt.Println("redirect!")
-			//		return http.ErrUseLastResponse
-			//	},
-			//}
-
-			//resp, err := c.Do(req)
 			if err != nil {
 				fmt.Println("c.Do() err: ", err)
 				return
 			}
-
-			//if err == http.ErrUseLastResponse {
-			//	fmt.Println("最后一次重定向")
-			//	defer resp.Body.Close()
-			//	data, err := ioutil.ReadAll(resp.Body)
-			//	if err != nil {
-			//		fmt.Println("data, err := ioutil.ReadAll(resp.Body): ",err)
-			//		return
-			//	}
-			//	fmt.Println(string(data))
-			//	return
-			//}
-			//else if err != nil {
-			//	fmt.Println("resp, err := http.DefaultClient.Do(req) err: ",err)
-			//	return
-			//}
 
 			// 读取返回信息并打印字符串
 			data, err := ioutil.ReadAll(resp.Body)
@@ -120,24 +90,21 @@ func (f *Faker) Do() (done int8) {
 				return
 			}
 
-			// msg := gjson.Get(string(data), "m").String()
 			e := gjson.Get(string(data), "e").Int()
 			if e == 0 {
+				mu.Lock()
 				done++
+				mu.Unlock()
 			} else {
-				if global.G_CONF.WithEmail.Account != "" {
-					//TODO: email result.
-					// gomail: could not send email 1: 550 Mail content denied. http://service.mail.qq.com/cgi-bin/help?subtype=1&&id=20022&&no=1000726 [MFzFTLSV4lzOGwIfv+UqxoSSC6s1Cw9zqHAGgKkhM21V12ZU/zcxWo5jtQFePQGG4w== IP: 223.88.165.204]
-
-					//if err := f.E.SendMail(f.Conf.StusInfos[i].Email, "打卡通告", "今日打卡失败，请手动打卡"); err != nil {
-					//	log.Printf("发送邮件失败%s\n", err)
-					//}
+				if global.G_CONF.E.Enabled == true {
+					if err := global.G_CONF.E.SendMail(global.G_CONF.StusInfos[i].Email, "打卡通告", "今日打卡失败，请手动打卡"); err != nil {
+						log.Printf("发送邮件失败%s\n", err)
+					}
 				}
 			}
 		}(i)
 	}
 
 	wg.Wait()
-	fmt.Printf("打卡完毕，一共%d个用户，成功了%d个\n", f.Cnt, done)
-	return nil, done
+	return done
 }

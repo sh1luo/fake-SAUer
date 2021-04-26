@@ -2,11 +2,13 @@ package global
 
 import (
 	"encoding/json"
+	"gopkg.in/gomail.v2"
 	"os"
+	"strconv"
 )
 
 type Config struct {
-	WithEmail *smtpEmail `json:"withEmail"`
+	E         *smtp      `json:"withEmail"`
 	StusInfos []*StuInfo `json:"stu_info"`
 }
 
@@ -23,20 +25,36 @@ type StuInfo struct {
 	UUID string `json:"uuid"`
 }
 
-type smtpEmail struct {
+type smtp struct {
+	Enabled bool   `json:"enabled"`
 	Account string `json:"account"`
 	Token   string `json:"token"`
 	Host    string `json:"host"`
 	Port    string `json:"port"`
 }
 
+func (e *smtp) SendMail(to string, subject, body string) error {
+	m := gomail.NewMessage()
+	m.SetHeader("From", m.FormatAddress(e.Account, "Punch MSG"))
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
+
+	p, err := strconv.Atoi(e.Port)
+	if err != nil {
+		return err
+	}
+	dialer := gomail.NewDialer(e.Host, p, e.Account, e.Token)
+	return dialer.DialAndSend(m)
+}
+
 func ReadConfig() (err error) {
 	c := &Config{
-		WithEmail: new(smtpEmail),
+		E:         new(smtp),
 		StusInfos: make([]*StuInfo, 1),
 	}
 
-	f, err := os.Open("global.json")
+	f, err := os.Open("config.json")
 	if err != nil {
 		return err
 	}

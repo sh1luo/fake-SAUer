@@ -65,7 +65,6 @@ func checkInfo() int {
 	return nums
 }
 
-
 // GetUUID ...
 //func (f *Faker) GetUUID() {
 //	var wg sync.WaitGroup

@@ -1,21 +1,33 @@
 {
   "withEmail": {
-    "account": "3450047248@qq.com",
-    "token": "YOURTOKEN",
+    "enabled": true,
+    "account": "YOUR_LOGIN_ID",
+    "token": "YOUR_LOGIN_TOKEN",
     "host": "smtp.qq.com",
-    "port": "25"
+    "port": "465"
   },
   "stu_info": [
     {
-      "name": "刘继坤",
-      "phone": "15236176076",
-      "province": "辽宁省",
-      "city": "沈阳市",
-      "college": "计算机学院",
-      "account": "183411010125",
-      "passwd": "52biancheng",
-      "email": "690898835@qq.com",
-      "uuid": "431246328"
+      "name": "YOUR_NAME",
+      "phone": "PHONE_NUMBER",
+      "province": "XX省",
+      "city": "XX市",
+      "college": "XXX学院",
+      "account": "XXXX",
+      "passwd": "XXXX",
+      "email": "XXX@XX.com",
+      "uuid": "XXXXXXX"
+    },
+    {
+      "name": "YOUR_NAME",
+      "phone": "PHONE_NUMBER",
+      "province": "XX省",
+      "city": "XX市",
+      "college": "XXX学院",
+      "account": "XXXX",
+      "passwd": "XXXX",
+      "email": "XXX@XX.com",
+      "uuid": "XXXXXXX"
     }
   ]
 }

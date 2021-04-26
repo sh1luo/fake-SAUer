@@ -3,6 +3,7 @@ package cmd
 import (
 	"fake-SAUer/core"
 	"fmt"
+	"github.com/robfig/cron/v3"
 	"log"
 	"time"
 )
@@ -12,13 +13,16 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("********初始化完成，共需打卡%d人********\n", f.Cnt)
 
-	start := time.Now()
-	done := f.Do()	// 执行打卡逻辑
-	log.Printf("总用时%s,共需打卡%d人，成功打卡%d人\n", time.Since(start),f.Cnt,done)
+	c := cron.New()
+	_,err = c.AddFunc("* * * * *", func() {
+		fmt.Printf("********初始化完成，共需打卡%d人********\n", f.Cnt)
+		start := time.Now()
+		done := f.Do() // 执行打卡逻辑
+		log.Printf("总用时%s,共需打卡%d人，成功打卡%d人\n\n", time.Since(start), f.Cnt, done)
+	})
 	if err != nil {
-		log.Fatalf("Add job err: %v", err)
-		return
+		panic(err)
 	}
+	c.Start()
 }
