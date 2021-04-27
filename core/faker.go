@@ -37,6 +37,25 @@ func (f *Faker) Do() (done int8) {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	wg.Add(f.Cnt)
+
+	// 复用一份header
+	h := make(http.Header, 16)
+	h.Set("Accept", "application/json, text/javascript, */*; q=0.01")
+	h.Set("Accept-Encoding", "gzip,deflate,br")
+	h.Set("Accept-Language", "zh-CN,zh;q=0.9,zh-TW;q=0.8,en-US;q=0.7,en;q=0.6")
+	h.Set("Cache-Control", "no-cache")
+	h.Set("Connection", "keep-alive")
+	h.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	h.Set("Host", "app.sau.edu.cn")
+	h.Set("Origin", "https://app.sau.edu.cn")
+	h.Set("Pragma", "no-cache")
+	h.Set("Referer", "https://app.sau.edu.cn/form/wap/default/index?formid=10&nn=4669.797748311082")
+	h.Set("Sec-Fetch-Dest", "empty")
+	h.Set("Sec-Fetch-Mode", "cors")
+	h.Set("Sec-Fetch-Site", "same-origin")
+	h.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36")
+	h.Set("X-Requested-With", "XMLHttpRequest")
+
 	for i := 0; i < f.Cnt; i++ {
 		go func(i int) {
 
@@ -54,24 +73,8 @@ func (f *Faker) Do() (done int8) {
 				panic("致命错误，构造POST表单失败！")
 			}
 
-			req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
-			req.Header.Add("Accept-Encoding", "gzip,deflate,br")
-			req.Header.Add("Accept-Language", "zh-CN,zh;q=0.9,zh-TW;q=0.8,en-US;q=0.7,en;q=0.6")
-			req.Header.Add("Cache-Control", "no-cache")
-			req.Header.Add("Connection", "keep-alive")
-
-			req.Header.Add("Content-Length", strconv.Itoa(len(u.Encode())))
-			req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-			req.Header.Add("Host", "app.sau.edu.cn")
-			req.Header.Add("Origin", "https://app.sau.edu.cn")
-			req.Header.Add("Pragma", "no-cache")
-			req.Header.Add("Referer", "https://app.sau.edu.cn/form/wap/default/index?formid=10&nn=4669.797748311082")
-
-			req.Header.Add("Sec-Fetch-Dest", "empty")
-			req.Header.Add("Sec-Fetch-Mode", "cors")
-			req.Header.Add("Sec-Fetch-Site", "same-origin")
-			req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36")
-			req.Header.Add("X-Requested-With", "XMLHttpRequest")
+			req.Header = h
+			req.Header.Set("Content-Length", strconv.Itoa(len(u.Encode())))
 
 			for _, c := range cks {
 				req.AddCookie(c)
