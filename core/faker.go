@@ -38,7 +38,7 @@ func (f *Faker) Do() (done int8) {
 	var mu sync.Mutex
 	wg.Add(f.Cnt)
 
-	// 复用一份header
+	// 复用一份header，只需要修改Content-Length即可
 	h := make(http.Header, 16)
 	h.Set("Accept", "application/json, text/javascript, */*; q=0.01")
 	h.Set("Accept-Encoding", "gzip,deflate,br")
@@ -86,7 +86,6 @@ func (f *Faker) Do() (done int8) {
 				return
 			}
 
-			// 读取返回信息并打印字符串
 			data, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				fmt.Println("data, err := ioutil.ReadAll(resp.Body): ", err)
