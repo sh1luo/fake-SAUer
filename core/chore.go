@@ -43,9 +43,9 @@ func bindInfo(f *global.StuInfo, sid string) url.Values {
 	u.Add("shentishifouyoubushizhengzhuan", "否")
 	u.Add("shifouyoufare", "否")
 
-	u.Add("tiwen", "36.6")
-	u.Add("tiwen1", "36.6")
-	u.Add("tiwen2", "36.6")
+	u.Add("tiwen", "36.5")
+	u.Add("tiwen1", "36.5")
+	u.Add("tiwen2", "36.5")
 
 	u.Add("fanhuididian", "")
 	u.Add("qitaxinxi", "")
