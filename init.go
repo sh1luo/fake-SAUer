@@ -1,4 +1,4 @@
-package conf
+package main
 
 func init() {
 	err := ReadConfig()

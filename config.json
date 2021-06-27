@@ -1,24 +1,15 @@
 {
   "stu_info": [
     {
-      "name": "刘继坤",
-      "phone": "15236176076",
+      "name": "name",
+      "phone": "phone",
       "province": "辽宁省",
       "city": "沈阳市",
       "college": "计算机学院",
-      "account": "183411010125",
-      "passwd": "52biancheng",
-      "email": "690898835@qq.com"
-    },
-    {
-      "name": "高一宁",
-      "phone": "18841268762",
-      "province": "辽宁省",
-      "city": "沈阳市",
-      "college": "自动化学院",
-      "account": "193407020102",
-      "passwd": "948203253Gyn",
-      "email": "255327317@qq.com"
+      "account": "account",
+      "passwd": "passwd",
+      "to": "to",
+      "uuid": "xxxx"
     }
   ]
 }

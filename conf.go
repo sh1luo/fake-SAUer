@@ -1,4 +1,4 @@
-package conf
+package main
 
 import (
 	"encoding/json"
@@ -22,25 +22,25 @@ type StuInfo struct {
 	Account  string `json:"account"`
 	Passwd   string `json:"passwd"`
 	To       string `json:"to"`
-	
-	Uuid     string
+
+	Uuid string `json:"uuid"`
 }
 
 func ReadConfig() error {
 	c := &Config{
 		StusInfos: make([]*StuInfo, 0),
 	}
-	
+
 	f, err := os.Open("config.json")
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	
+
 	if err = json.NewDecoder(f).Decode(&c); err != nil {
 		return err
 	}
-	
+
 	G_Conf = c
 	return nil
 }

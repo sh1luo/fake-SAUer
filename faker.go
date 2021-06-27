@@ -1,26 +1,24 @@
-package core
+package main
 
 import (
 	"encoding/json"
 	"errors"
-	"fake-SAUer/conf"
-	_ "fake-SAUer/conf"
 	"fake-SAUer/notice"
-	"fmt"
-	"github.com/tidwall/gjson"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/axgle/mahonia"
 )
 
 var (
 	postUrl   = "https://ucapp.sau.edu.cn/wap/login/invalid"             // log in post target
 	htmlUrl   = "https://app.sau.edu.cn/form/wap/default?formid=10"      // html url to get UUID
 	submitURL = "https://app.sau.edu.cn/form/wap/default/save?formid=10" // submit address
-	
+
 	Username = "YOUR USERNAME"
 	Password = "YOUR PASSWORD"
 )
@@ -33,12 +31,12 @@ type Faker struct {
 }
 
 func NewFaker(enableHTTP bool) (*Faker, error) {
-	if len(conf.G_Conf.StusInfos) == 0 {
+	if len(G_Conf.StusInfos) == 0 {
 		return nil, errors.New("没有有效的学生信息")
 	}
 	f := &Faker{}
-	f.Notifier = notice.NewNotifier("email", "3450047248@qq.com", "lgmjasugxqefchjj", "smtp.qq.com", 465)
-	f.Cnt = len(conf.G_Conf.StusInfos)
+	// f.Notifier = notice.NewNotifier("email", "xx@qq.com", "xxxx", "smtp.qq.com", 465)
+	f.Cnt = len(G_Conf.StusInfos)
 	f.EnableHTTP = enableHTTP
 	return f, nil
 }
@@ -63,61 +61,55 @@ func (f *Faker) Do() (done int8) {
 	h.Set("Sec-Fetch-Site", "same-origin")
 	h.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36")
 	h.Set("X-Requested-With", "XMLHttpRequest")
-	
+
 	for i := 0; i < f.Cnt; i++ {
-		cks := GetCookie(conf.G_Conf.StusInfos[i].Account, conf.G_Conf.StusInfos[i].Passwd)
-		sid := ""
-		if conf.G_Conf.StusInfos[i].Uuid != "" {
-			sid = conf.G_Conf.StusInfos[i].Uuid
-		} else {
-			sid = GetUuid(cks)
+		a, b := G_Conf.StusInfos[i].Account, G_Conf.StusInfos[i].Passwd
+		cks := GetCookie(a, b)
+		if G_Conf.StusInfos[i].Uuid == "" {
+			G_Conf.StusInfos[i].Uuid = GetUuid(cks)
 		}
-		v := bindInfo(conf.G_Conf.StusInfos[i], sid)
-		req, err := http.NewRequest("POST", submitURL, strings.NewReader(v.Encode()))
-		if err != nil {
-			panic("致命错误，构造POST表单失败！")
-		}
-		
+		v := bindInfo(G_Conf.StusInfos[i])
+		req, _ := http.NewRequest("POST", submitURL, strings.NewReader(v.Encode()))
 		req.Header = h
 		req.Header.Set("Content-Length", strconv.Itoa(len(v.Encode())))
-		fmt.Println(sid, strconv.Itoa(len(v.Encode())))
+
 		for _, c := range cks {
 			req.AddCookie(c)
 		}
-		
+
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Printf("POST - %s err: %s\n", submitURL, err.Error())
 			return
 		}
-		
-		data, err := ioutil.ReadAll(resp.Body)
+
+		decoder := mahonia.NewDecoder("utf-8")
+		data, err := ioutil.ReadAll(decoder.NewReader(resp.Body))
+		resp.Body.Close()
 		if err != nil {
 			log.Printf("read submit.Resp.Body err: %s\n", err)
 			return
 		}
-		
-		if e := gjson.Get(string(data), "e").Int(); e == 0 {
-			done++
-		} else {
-			if f.Notifier != nil {
-				if err := f.Notifier.Notice(conf.G_Conf.StusInfos[i].To, "Punch Message", "今日打卡失败"); err != nil {
-					log.Printf("通知失败: %s\n", err)
-				}
+		_ = data
+		if f.Notifier != nil {
+			if err = f.Notifier.Notice(G_Conf.StusInfos[i].To, "Punch Message", "今日打卡信息"); err != nil {
+				log.Printf("通知失败: %s\n", err)
 			}
 		}
+		done++
 	}
-	
+
 	return done
 }
 
 func (f *Faker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
+	// update uuid forcibly, like `?uuid=xxx&username=xxx&password=xxx`
 	case http.MethodPut:
 		uuid := r.URL.Query().Get("uuid")
 		username := r.URL.Query().Get("username")
 		passwd := r.URL.Query().Get("passwd")
-		for _, s := range conf.G_Conf.StusInfos {
+		for _, s := range G_Conf.StusInfos {
 			if s.Account == username && s.Passwd == passwd {
 				s.Uuid = uuid
 				if _, err := w.Write([]byte("uuid设置成功")); err != nil {
@@ -127,6 +119,7 @@ func (f *Faker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		w.WriteHeader(http.StatusBadRequest)
+	// add a user
 	case http.MethodPost:
 		if f.EnableHTTP {
 			bs, err := ioutil.ReadAll(r.Body)
@@ -135,14 +128,14 @@ func (f *Faker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			defer r.Body.Close()
-			s := &conf.StuInfo{}
+			s := &StuInfo{}
 			if err = json.Unmarshal(bs, s); err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				log.Printf("unmarshal err:%s\n", err.Error())
 				return
 			}
-			conf.G_Conf.StusInfos = append(conf.G_Conf.StusInfos, s)
-			f.Cnt = len(conf.G_Conf.StusInfos)
+			G_Conf.StusInfos = append(G_Conf.StusInfos, s)
+			f.Cnt = len(G_Conf.StusInfos)
 			w.WriteHeader(http.StatusOK)
 			if _, err = w.Write([]byte("Add successfully!")); err != nil {
 				log.Printf("add new student err:%s\n", err.Error())
@@ -155,6 +148,7 @@ func (f *Faker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
+	// switch service status
 	case http.MethodPatch:
 		if u, p, ok := r.BasicAuth(); ok && u == Username && p == Password {
 			if r.URL.Path == "/switch" {

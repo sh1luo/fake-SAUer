@@ -1,22 +1,21 @@
 package main
 
 import (
-	"fake-SAUer/core"
 	"fmt"
 	"github.com/robfig/cron/v3"
 	"log"
 	"time"
 )
 
-var f *core.Faker
+var f *Faker
 
 func main() {
 	var err error
-	f, err = core.NewFaker(true)
+	f, err = NewFaker(true)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	// 两次是防止有一次出问题，1和3是避免0点高峰
 	c := cron.New()
 	_, err = c.AddFunc("* * * * *", func() {
@@ -28,8 +27,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	c.Start()
-	
+
 	StartHTTPServer()
 }

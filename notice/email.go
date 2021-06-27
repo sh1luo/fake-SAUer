@@ -26,7 +26,7 @@ func (n *EmailNotifier) Notice(to, subject, body string) error {
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body)
-	
+
 	dialer := gomail.NewDialer(n.Host, n.Port, n.Account, n.Token)
 	return dialer.DialAndSend(m)
 }
