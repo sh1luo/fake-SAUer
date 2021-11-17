@@ -1,0 +1,26 @@
+{
+  "stu_info": [
+    {
+      "name": "name",
+      "phone": "phone",
+      "province": "a省",
+      "city": "b市",
+      "college": "c学院",
+      "account": "account",
+      "passwd": "passwd",
+      "to": "to",
+      "uuid": "uuid"
+    },
+    {
+      "name": "name",
+      "phone": "phone",
+      "province": "d",
+      "city": "e市",
+      "college": "f学院",
+      "account": "account",
+      "passwd": "passwd",
+      "to": "to",
+      "uuid": "uuid"
+    }
+  ]
+}
