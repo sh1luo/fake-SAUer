@@ -1,34 +1,40 @@
 package main
 
 import (
-	"fmt"
+	"fake-SAUer/conf"
+	"fake-SAUer/core"
 	"github.com/robfig/cron/v3"
 	"log"
 	"time"
 )
 
-var f *Faker
-
 func main() {
-	var err error
-	f, err = NewFaker(true)
+	err := conf.ReadConfig()
 	if err != nil {
 		panic(err)
 	}
+	
+	f, err := core.NewFaker(true)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Loading finished, totally %d students...\n", f.Cnt)
 
 	// 两次是防止有一次出问题，1和3是避免0点高峰
 	c := cron.New()
-	_, err = c.AddFunc("* * * * *", func() {
-		fmt.Printf("********准备开始今日打卡,共需打卡%d人********\n", f.Cnt)
+	_, err = c.AddFunc("0 1,3 * * *", func() {
+		log.Printf("start...")
 		start := time.Now()
 		done := f.Do()
-		log.Printf("总用时%s,共需打卡%d人,成功打卡%d人\n\n", time.Since(start), f.Cnt, done)
+		log.Printf("Completed today, %s sec. %d in needing to sign-in,successfully %d\n", time.Since(start), f.Cnt, done)
 	})
 	if err != nil {
 		panic(err)
 	}
-
+	
 	c.Start()
-
-	StartHTTPServer()
+	select {
+	
+	}
+	core.StartHTTPServer()
 }

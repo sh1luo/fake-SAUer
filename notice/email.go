@@ -11,12 +11,12 @@ type EmailNotifier struct {
 	Port    int    `json:"port"`
 }
 
-func NewEmailNotifier(Account, Token, Host string, Post int) *EmailNotifier {
+func NewEmailNotifier(args ...interface{}) *EmailNotifier {
 	notifier := &EmailNotifier{}
-	notifier.Token = Token
-	notifier.Account = Account
-	notifier.Host = Host
-	notifier.Port = Post
+	notifier.Token = args[0].(string)
+	notifier.Account = args[1].(string)
+	notifier.Host = args[2].(string)
+	notifier.Port = args[3].(int)
 	return notifier
 }
 

@@ -4,9 +4,9 @@ type Notifier interface {
 	Notice(to, subject, body string) error
 }
 
-func NewNotifier(notifierName, Account, Token, Host string, Post int) Notifier {
+func NewNotifier(notifierName string, args ...interface{}) Notifier {
 	if notifierName == "email" {
-		return NewEmailNotifier(Account, Token, Host, Post)
+		return NewEmailNotifier(args)
 	}
 
 	return nil

@@ -1,4 +1,4 @@
-package main
+package conf
 
 import (
 	"encoding/json"
@@ -6,11 +6,11 @@ import (
 )
 
 var (
-	G_Conf *Config
+	Stus *Config
 )
 
 type Config struct {
-	StusInfos []*StuInfo `json:"stu_info"`
+	StusInfo []*StuInfo `json:"stu_info"`
 }
 
 type StuInfo struct {
@@ -27,20 +27,29 @@ type StuInfo struct {
 }
 
 func ReadConfig() error {
-	c := &Config{
-		StusInfos: make([]*StuInfo, 0),
+	Stus = &Config{
+		StusInfo: make([]*StuInfo, 5),
 	}
 
 	f, err := os.Open("config.json")
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-
-	if err = json.NewDecoder(f).Decode(&c); err != nil {
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			return
+		}
+	}(f)
+	
+	err = json.NewDecoder(f).Decode(Stus)
+	if err != nil {
 		return err
 	}
-
-	G_Conf = c
+	
 	return nil
+}
+
+func FilterInvalidStudents() {
+
 }
