@@ -33,6 +33,6 @@ func main() {
 	}
 	
 	c.Start()
+	core.StartHTTPServer(f)
 	select {}
-	core.StartHTTPServer()
 }

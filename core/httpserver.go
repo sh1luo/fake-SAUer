@@ -1,11 +1,21 @@
 package core
 
-func StartHTTPServer() {
-	//http.Handle("/faker", nil)
-	//err := http.ListenAndServe(":9000", nil)
-	//if err != nil {
-	//	log.Fatalf("HTTP Server Start error: %s\n", err.Error())
-	//}
+import (
+	"log"
+	"net/http"
+)
+
+func StartHTTPServer(faker *Faker) {
+	log.Printf("Starting HTTP Server at 'localhost:9000'...\n")
+	http.Handle("/", faker)
+	err := http.ListenAndServe(":9000", nil)
+	if err != nil {
+		log.Fatalf("HTTP Server Start error: %s\n", err.Error())
+	}
+}
+
+func (f *Faker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("I'm a faker!"))
 }
 
 //func (f *Faker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
