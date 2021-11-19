@@ -32,13 +32,35 @@ type Faker struct {
 }
 
 func NewFaker(enableHTTP bool) (f *Faker, err error) {
-	if len(conf.Stus.StusInfo) == 0 {
+	if len(conf.GlobalConfig.StusInfo) == 0 {
 		return nil, errors.New("has no valid students information")
 	}
 	
 	f = &Faker{}
-	// f.Notifier = notice.NewNotifier("email", "xx@qq.com", "xxxx", "smtp.qq.com", 465)
-	f.Cnt = len(conf.Stus.StusInfo)
+	//inNotifier := reflect.ValueOf(conf.GlobalConfig.NotifierInfo).FieldByName(conf.GlobalConfig.NotifierInfo.Method).Interface()
+	//f.Notifier = notice.NewNotifier(conf.GlobalConfig.NotifierInfo.Method, inNotifier)
+	//fmt.Println("f.notifier:", f.Notifier)
+	//reVal := reflect.ValueOf(conf.GlobalConfig.NotifierInfo)
+	//reType := reflect.TypeOf(conf.GlobalConfig.NotifierInfo)
+	// TODO: Now only handle first layer of nested struct
+	//for i := 0; i < reVal.NumField(); i++ {
+	//	if reVal.Field(i).Kind() == reflect.Struct || reVal.Field(i).Kind() == reflect.Ptr {
+	//		reSubVal := reVal.Field(i)
+	//		flag := -1
+	//		for j := 0; j < reSubVal.NumField(); j++ {
+	//			if reSubVal.Field(i).Interface().(string) == "" {
+	//				flag = j
+	//				break
+	//			}
+	//		}
+	//		if flag != -1 {
+	//			f.Notifier = notice.NewNotifier(reSubVal.Field(0).String(), "xx@qq.com", "xxxx", "smtp.qq.com", 465)
+	//		}
+	//	} else {
+	//
+	//	}
+	//}
+	f.Cnt = len(conf.GlobalConfig.StusInfo)
 	f.EnableHTTP = enableHTTP
 	
 	return f, nil
@@ -51,14 +73,15 @@ func (f *Faker) Do() (done int) {
 	for i := 0; i < f.Cnt; i++ {
 		go func(i int) {
 			defer wg.Done()
-			acc, passwd := conf.Stus.StusInfo[i].Account, conf.Stus.StusInfo[i].Passwd
+			acc, passwd := conf.GlobalConfig.StusInfo[i].Account, conf.GlobalConfig.StusInfo[i].Passwd
 			cks := getCookies(acc, passwd)
-			if conf.Stus.StusInfo[i].Uuid == "" {
-				conf.Stus.StusInfo[i].Uuid = getUuid(cks)
+			if conf.GlobalConfig.StusInfo[i].Uuid == "" {
+				conf.GlobalConfig.StusInfo[i].Uuid = getUuid(cks)
 			}
-			body := structs2urlValues(conf.Stus.StusInfo[i])
+			body := structs2urlValues(conf.GlobalConfig.StusInfo[i])
 			
 			req, _ := http.NewRequest("POST", submitURL, strings.NewReader(body.Encode()))
+			// TODO: reuse http header
 			h := make(http.Header, 16)
 			h.Set("Location", "辽宁省沈阳市")
 			h.Set("Accept", "application/json, text/javascript, */*; q=0.01")
@@ -79,7 +102,6 @@ func (f *Faker) Do() (done int) {
 			h.Set("X-Requested-With", "XMLHttpRequest")
 			req.Header = h
 			req.Header.Set("Content-Length", strconv.Itoa(len(body.Encode())))
-			
 			for _, c := range cks {
 				req.AddCookie(c)
 			}
@@ -99,7 +121,7 @@ func (f *Faker) Do() (done int) {
 			_ = data
 			
 			if f.Notifier != nil {
-				if err = f.Notifier.Notice(conf.Stus.StusInfo[i].To, "Sign-in Message", "Failed to perform the task today"); err != nil {
+				if err = f.Notifier.Notice(conf.GlobalConfig.StusInfo[i].To, "Sign-in Message", "Failed to perform the task today"); err != nil {
 					panic(err)
 				}
 			}
@@ -144,7 +166,7 @@ func structs2urlValues(f *conf.StuInfo) url.Values {
 	u.Add("shifouyoufare", "否")
 	u.Add("qitaxinxi", "")
 	u.Add("tiwen", "36.3")
-	u.Add("tiwen1", "36.3")
+	u.Add("tiwen1", "36.4")
 	u.Add("tiwen2", "36.3")
 	
 	t := time.Now().Format("2006-01-02")

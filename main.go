@@ -26,15 +26,13 @@ func main() {
 		log.Printf("start...")
 		start := time.Now()
 		done := f.Do()
-		log.Printf("Completed today, %s sec. %d in needing to sign-in,successfully %d\n", time.Since(start), f.Cnt, done)
+		log.Printf("Completed today, %s sec. %d in needing to sign-in, successfully %d\n", time.Since(start), f.Cnt, done)
 	})
 	if err != nil {
 		panic(err)
 	}
 	
 	c.Start()
-	select {
-	
-	}
+	select {}
 	core.StartHTTPServer()
 }

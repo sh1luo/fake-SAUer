@@ -6,11 +6,17 @@ import (
 )
 
 var (
-	Stus *Config
+	GlobalConfig *Config
 )
 
 type Config struct {
-	StusInfo []*StuInfo `json:"stu_info"`
+	NotifierInfo NotifierInfo `json:"notifier_info"`
+	StusInfo     []*StuInfo   `json:"stu_info"`
+}
+
+type NotifierInfo struct {
+	Method string    `json:"method"`
+	Email  SMTPEmail `json:"email"`
 }
 
 type StuInfo struct {
@@ -26,8 +32,15 @@ type StuInfo struct {
 	Uuid string `json:"uuid"`
 }
 
+type SMTPEmail struct {
+	Account string `json:"account"`
+	Token   string `json:"token"`
+	Host    string `json:"host"`
+	Port    string `json:"port"`
+}
+
 func ReadConfig() error {
-	Stus = &Config{
+	GlobalConfig = &Config{
 		StusInfo: make([]*StuInfo, 5),
 	}
 
@@ -42,7 +55,7 @@ func ReadConfig() error {
 		}
 	}(f)
 	
-	err = json.NewDecoder(f).Decode(Stus)
+	err = json.NewDecoder(f).Decode(GlobalConfig)
 	if err != nil {
 		return err
 	}
