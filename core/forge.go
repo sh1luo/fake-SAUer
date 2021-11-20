@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -23,10 +24,11 @@ var (
 )
 
 type Faker struct {
-	// punch counts
-	Cnt        int
+	Cnt int
 	
-	Notifier   notice.Notifier
+	Notifier notice.Notifier
+	
+	NoticeChannel chan error
 	
 	EnableHTTP bool
 }
@@ -37,9 +39,12 @@ func NewFaker(enableHTTP bool) (f *Faker, err error) {
 	}
 	
 	f = &Faker{}
-	//inNotifier := reflect.ValueOf(conf.GlobalConfig.NotifierInfo).FieldByName(conf.GlobalConfig.NotifierInfo.Method).Interface()
-	//f.Notifier = notice.NewNotifier(conf.GlobalConfig.NotifierInfo.Method, inNotifier)
-	//fmt.Println("f.notifier:", f.Notifier)
+	inNotifier := reflect.ValueOf(conf.GlobalConfig.NotifierInfo).FieldByName(conf.GlobalConfig.NotifierInfo.Method).Interface()
+	f.Notifier = notice.NewNotifier(conf.GlobalConfig.NotifierInfo.Method, inNotifier)
+	f.Cnt = len(conf.GlobalConfig.StusInfo)
+	f.EnableHTTP = enableHTTP
+	f.NoticeChannel = make(chan error, 20)
+	
 	//reVal := reflect.ValueOf(conf.GlobalConfig.NotifierInfo)
 	//reType := reflect.TypeOf(conf.GlobalConfig.NotifierInfo)
 	// TODO: Now only handle first layer of nested struct
@@ -60,13 +65,11 @@ func NewFaker(enableHTTP bool) (f *Faker, err error) {
 	//
 	//	}
 	//}
-	f.Cnt = len(conf.GlobalConfig.StusInfo)
-	f.EnableHTTP = enableHTTP
 	
 	return f, nil
 }
 
-// Do 执行任务,返回打卡成功数量
+// Do 返回打卡成功数量
 func (f *Faker) Do() (done int) {
 	wg := &sync.WaitGroup{}
 	wg.Add(f.Cnt)
@@ -120,7 +123,7 @@ func (f *Faker) Do() (done int) {
 			
 			_ = data
 			
-			if f.Notifier != nil {
+			if f.Notifier != nil && conf.GlobalConfig.StusInfo[i].To != "" {
 				if err = f.Notifier.Notice(conf.GlobalConfig.StusInfo[i].To, "Sign-in Message", "Failed to perform the task today"); err != nil {
 					panic(err)
 				}

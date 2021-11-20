@@ -2,13 +2,14 @@ package notice
 
 import (
 	"gopkg.in/gomail.v2"
+	"strconv"
 )
 
 type EmailNotifier struct {
 	Account string `json:"account"`
 	Token   string `json:"token"`
 	Host    string `json:"host"`
-	Port    int    `json:"port"`
+	Port    string `json:"port"`
 }
 
 func NewEmailNotifier(notifier interface{}) *EmailNotifier {
@@ -22,7 +23,11 @@ func (n *EmailNotifier) Notice(to, subject, body string) error {
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body)
-
-	dialer := gomail.NewDialer(n.Host, n.Port, n.Account, n.Token)
+	
+	p, err := strconv.Atoi(n.Port)
+	if err != nil {
+		return err
+	}
+	dialer := gomail.NewDialer(n.Host, p, n.Account, n.Token)
 	return dialer.DialAndSend(m)
 }

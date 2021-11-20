@@ -10,7 +10,7 @@
 https://app.sau.edu.cn/form/wap/default?formid=10
 ```
 
-F12 点到 Network 栏，手动提交并查看 URL 结尾为 `xxxx/default/save?formid=10` 的 POST 请求，其中有个字段叫 `id`，填到配置项的 `uuid` 处，其余字段正常填写。
+F12 点到 Network 栏，手动打卡并查看 URI 结尾为 `xxxx/default/save?formid=10` 的 POST 请求，请求体中其中有个字段叫 `id`，填到配置项的 `uuid` 处，其余字段正常填写。
 
 接下来是部署工作，找一台服务器或者不关机的电脑。
 

@@ -5,7 +5,7 @@ type Notifier interface {
 }
 
 func NewNotifier(notifierName string, notifierStruct interface{}) Notifier {
-	if notifierName == "email" {
+	if notifierName == "Email" {
 		return NewEmailNotifier(notifierStruct)
 	}
 

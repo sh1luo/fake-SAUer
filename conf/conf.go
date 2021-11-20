@@ -2,6 +2,7 @@ package conf
 
 import (
 	"encoding/json"
+	"fake-SAUer/notice"
 	"os"
 )
 
@@ -15,8 +16,8 @@ type Config struct {
 }
 
 type NotifierInfo struct {
-	Method string    `json:"method"`
-	Email  SMTPEmail `json:"email"`
+	Method string                `json:"method"`
+	Email  *notice.EmailNotifier `json:"email"`
 }
 
 type StuInfo struct {
@@ -30,13 +31,6 @@ type StuInfo struct {
 	To       string `json:"to"`
 
 	Uuid string `json:"uuid"`
-}
-
-type SMTPEmail struct {
-	Account string `json:"account"`
-	Token   string `json:"token"`
-	Host    string `json:"host"`
-	Port    string `json:"port"`
 }
 
 func ReadConfig() error {

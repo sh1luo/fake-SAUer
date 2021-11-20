@@ -1,6 +1,8 @@
 package core
 
 import (
+	"fake-SAUer/conf"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -15,7 +17,11 @@ func StartHTTPServer(faker *Faker) {
 }
 
 func (f *Faker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("I'm a faker!"))
+	resp := ""
+	for i := 0; i < f.Cnt; i++ {
+		resp += fmt.Sprintf("%d\t%s\t%s\t%s\n", i, conf.GlobalConfig.StusInfo[i].Name, conf.GlobalConfig.StusInfo[i].Account, conf.GlobalConfig.StusInfo[i].College)
+	}
+	w.Write([]byte(resp))
 }
 
 //func (f *Faker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
