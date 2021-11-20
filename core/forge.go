@@ -28,8 +28,6 @@ type Faker struct {
 	
 	Notifier notice.Notifier
 	
-	NoticeChannel chan error
-	
 	EnableHTTP bool
 }
 
@@ -39,11 +37,12 @@ func NewFaker(enableHTTP bool) (f *Faker, err error) {
 	}
 	
 	f = &Faker{}
-	inNotifier := reflect.ValueOf(conf.GlobalConfig.NotifierInfo).FieldByName(conf.GlobalConfig.NotifierInfo.Method).Interface()
-	f.Notifier = notice.NewNotifier(conf.GlobalConfig.NotifierInfo.Method, inNotifier)
+	if conf.GlobalConfig.NotifierInfo.Method != "" {
+		inNotifier := reflect.ValueOf(conf.GlobalConfig.NotifierInfo).FieldByName(conf.GlobalConfig.NotifierInfo.Method).Interface()
+		f.Notifier = notice.NewNotifier(conf.GlobalConfig.NotifierInfo.Method, inNotifier)
+	}
 	f.Cnt = len(conf.GlobalConfig.StusInfo)
 	f.EnableHTTP = enableHTTP
-	f.NoticeChannel = make(chan error, 20)
 	
 	//reVal := reflect.ValueOf(conf.GlobalConfig.NotifierInfo)
 	//reType := reflect.TypeOf(conf.GlobalConfig.NotifierInfo)
