@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fake-SAUer/conf"
 	"fake-SAUer/notice"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/axgle/mahonia"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -75,9 +75,20 @@ func (f *Faker) Do() (done int) {
 	wg.Add(f.Cnt)
 	for i := 0; i < f.Cnt; i++ {
 		go func(i int) {
+			defer func() {
+				if e := recover(); e != nil && f.Notifier != nil && conf.GlobalConfig.StusInfo[i].To != "" {
+					if e = f.Notifier.Notice(conf.GlobalConfig.StusInfo[i].To, "Failed Sign-in Message", fmt.Sprintf("Failed to perform the task today:\n\t%s", e)); e != nil {
+						panic(e)
+					}
+				}
+			}()
 			defer wg.Done()
 			acc, passwd := conf.GlobalConfig.StusInfo[i].Account, conf.GlobalConfig.StusInfo[i].Passwd
-			cks := getCookies(acc, passwd)
+			cks, err := getCookies(acc, passwd)
+			if err != nil {
+				panic(err)
+			}
+			
 			if conf.GlobalConfig.StusInfo[i].Uuid == "" {
 				conf.GlobalConfig.StusInfo[i].Uuid = getUuid(cks)
 			}
@@ -123,11 +134,6 @@ func (f *Faker) Do() (done int) {
 			
 			_ = data
 			
-			if f.Notifier != nil && conf.GlobalConfig.StusInfo[i].To != "" {
-				if err = f.Notifier.Notice(conf.GlobalConfig.StusInfo[i].To, "Sign-in Message", "Failed to perform the task today"); err != nil {
-					panic(err)
-				}
-			}
 			done++
 		}(i)
 	}
@@ -136,18 +142,18 @@ func (f *Faker) Do() (done int) {
 }
 
 // GetCookie 用账号密码获取cookies
-func getCookies(account, passwd string) []*http.Cookie {
+func getCookies(account, passwd string) ([]*http.Cookie, error) {
 	resp, err := http.PostForm(PostUrl, url.Values{
 		"username": {account},
 		"password": {passwd},
 	})
 	if err != nil {
-		log.Fatalf("Fatal error！Failed to get cookies：%v", err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 	
 	cks := resp.Cookies()
-	return cks
+	return cks, nil
 }
 
 // bindInfo 返回一个可以encode的url.Value结构
