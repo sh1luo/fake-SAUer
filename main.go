@@ -22,7 +22,7 @@ func main() {
 
 	// 两次是防止有一次出问题，1和3是避免0点高峰
 	c := cron.New()
-	_, err = c.AddFunc("0 1,3 * * *", func() {
+	_, err = c.AddFunc("0 1,3,5,7 * * *", func() {
 		log.Printf("start...")
 		start := time.Now()
 		done := f.Do()
