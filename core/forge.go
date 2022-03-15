@@ -175,7 +175,7 @@ func structs2urlValues(f *conf.StuInfo) url.Values {
 	u.Add("qitaxinxi", "")
 	u.Add("tiwen", "36.3")
 	u.Add("tiwen1", "36.4")
-	u.Add("tiwen2", "36.4")
+	u.Add("tiwen2", "36.5")
 	
 	t := time.Now().Format("2006-01-02")
 	u.Add("riqi", t)
